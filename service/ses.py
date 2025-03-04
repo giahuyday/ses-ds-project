@@ -19,13 +19,13 @@ class Process(threading.Thread):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((self.ip, self.port))
 
-    def log(self, message):
+    def process_logger(self, message):
         with open(f'{self.log_file}', 'a') as f:
             f.write(f"{datetime.now()} - {message}\n")
 
     def send_message(self, message, target_process):
         self.sock.sendto(message.encode(), (target_process.ip, target_process.port))
-        self.log(f"Process {self.pid} delivering: {message}")
+        self.process_logger(f"Process {self.pid} delivering: {message}")
 
     def send_messages(self):
         for i in range(self.num_messages):
@@ -33,7 +33,7 @@ class Process(threading.Thread):
 
             for target in self.processes:
                 if target.pid != self.pid:
-                    self.log(f"Process {self.pid} buffering: {message}")
+                    self.process_logger(f"Process {self.pid} buffering: {message}")
                     self.buffer.append((message, target))
 
             threads = []
@@ -57,7 +57,7 @@ class Process(threading.Thread):
         with self.lock:
             timestamp = datetime.now()
             print(f"Process {self.pid} received: {message} at {timestamp} by {addr}")
-            self.log(f"Process {self.pid} received: {message}")
+            self.process_logger(f"Process {self.pid} received: {message}")
 
     def run(self):
         threading.Thread(target=self.receive_messages, daemon=True).start()
